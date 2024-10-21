@@ -1,0 +1,61 @@
+{% extends 'nav.html' %}
+
+{% block title %}  All Uploads {% endblock %}
+
+
+{% block content %}
+<style>
+    /* Add some padding to table cells */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left; 
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    td {
+        border-bottom: 1px solid #ddd;
+    }
+    /* Add spacing between columns */
+    td:nth-child(1) {  /* Filename column */
+        width: 40%;
+    }
+    td:nth-child(2) {  /* Admission number column */
+        width: 30%;
+    }
+    td:nth-child(3) {  /* Download button column */
+        width: 30%;
+    }
+    a {
+        text-decoration: none;
+        color: #007bff;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+    <h1>All Uploaded Files</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Admission Number</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for upload in uploads %}
+            <tr>
+                <td>{{ upload[0] }}</td>  <!-- Filename -->
+                <td>{{ upload[1] }}</td>  <!-- Admission Number -->
+                <td>
+                    <a href="{{ url_for('serve_file', encoded_filename=quote(upload[0])) }}">Download</a>
+                </td>
+            </tr>
+            {% endfor %}
+      {% endblock %}

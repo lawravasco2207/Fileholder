@@ -1,0 +1,58 @@
+{% extends 'nav.html' %}
+
+{% block title %} CVL | Login {% endblock %}
+
+{% block content %}
+<div class="z-n1 position-absolute p-5 rounded-3">
+
+<!-- {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul>
+    {% for category, message in messages %}
+    <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+</ul> 
+{% endif %}
+{% endwith %} -->
+<center>
+  <h1>Login</h1>
+<form method="POST" action="{{ url_for('login') }}" class="login">
+    {{ form.hidden_tag() }}
+    
+    <div class="row mb-3">
+        
+        <div class="col-sm-10">
+            {{ form.username.label }}<br>
+            {{ form.username(class="col-sm-12 col-form-label") }}<br>
+            {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+      </div>
+      <div class="row mb-3">
+        
+        <div class="col-sm-10">
+            {{ form.password.label }}<br>
+            {{ form.password(class="col-sm-12 col-form-label") }}<br>
+            {% for error in form.password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+      </div>
+      <fieldset class="row mb-3">
+        <div class="row mb-3">
+            <div class="col-sm-10">
+                {{ form.admission_number.label }}<br>
+                {{ form.admission_number(class="col-sm-12 col-form-label") }}<br>
+                {% for error in form.admission_number.errors %}
+                    <span style="color: red;">{{ error }}</span><br>
+                {% endfor %}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Sign in</button>
+          <br>
+          <p>Don't have an account?? <a href="{{ url_for('signup') }}">Register</a></p>
+</form>
+</center>
+</div>
+{% endblock %}

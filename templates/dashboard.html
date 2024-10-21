@@ -1,0 +1,31 @@
+{% extends 'nav.html' %}
+
+{% block title %} CVL | Dashboard {% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <center>
+        <h2>Welcome, {{ username }}</h2>
+<p>Email: {{ email }}</p>
+<p>ADM.NO: {{ admission_number }}</p>
+
+<h3>Your Uploads</h3> 
+<ul>
+    {% for upload in uploads %}
+    <li>
+        {{ upload[0] }} 
+        <!-- Download button with encoded filename -->
+        <a href="{{ url_for('serve_file', encoded_filename=quote(upload[0]) ) }}" class="btn btn-primary" download>Download/Open</a>
+    </li>
+    {% endfor %}
+</ul>
+
+        
+
+
+<a href="{{ url_for('upload') }}" id="upload" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Upload a new file</a>
+<br>
+<a href="{{ url_for('logout') }}" id="logout" class="link-secondary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover">Log Out</a>
+   </center>
+</div>
+{% endblock %}

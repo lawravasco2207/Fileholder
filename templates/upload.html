@@ -1,0 +1,12 @@
+{% extends 'nav.html' %}
+
+{% block title %} CVL | Upload {% endblock %}
+
+{% block content %}
+<h1>Upload PDF</h1>
+<form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {{ form.pdf_file.label }} {{ form.pdf_file(class='btn btn-light') }}<br>
+    {{ form.submit(class='btn btn-primary') }}
+</form> 
+{% endblock %}
