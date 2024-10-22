@@ -1,0 +1,41 @@
+{% extends "nav.html" %}
+
+{% block title %} CVL | Notes {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Your Notes</h2>
+
+    <form method="POST" action="{{ url_for('notes') }}">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control", rows="5") }}
+        </div>
+        <div>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <hr>
+
+    <h3 class="mt-5">Previous Notes</h3>
+    {% if notes %}
+        <ul class="list-group mt-3">
+            {% for note in notes %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <p>{{ note[1] }}</p>
+                    <small class="text-muted">Written on {{ note[2].strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                </div>
+                <form method="POST" action="{{ url_for('delete_note', note_id=note[0]) }}" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted mt-3">You have no notes yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

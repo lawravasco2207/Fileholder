@@ -1,11 +1,13 @@
-from flask import Flask, jsonify, render_template, redirect, url_for, flash, make_response, send_file
+from flask import Flask, jsonify, render_template, redirect, url_for, flash, send_file, request
 import psycopg2
 import os
 import io
+# import requests
+from datetime import datetime
 # from psycopg2 import sql
 from urllib.parse import quote, unquote
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField
+from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo
 from email_validator import validate_email, EmailNotValidError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -141,6 +143,27 @@ class User(UserMixin):
 
     # Additional methods can be defined if needed
 
+
+# def create_notes_table():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+#     cur.execute('''
+#         CREATE TABLE IF NOT EXISTS notes (
+#             id SERIAL PRIMARY KEY,
+#             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+#             content TEXT NOT NULL,
+#             timestamp TIMESTAMPTZ DEFAULT NOW()
+#         );
+#     ''')
+#     conn.commit()
+#     cur.close()
+#     conn.close()
+
+# # Call the function to create the notes table
+# create_notes_table()
+
+
+
 @login_manager.user_loader
 def load_user(user_id):
     conn = get_db_connection()
@@ -191,7 +214,14 @@ class Login(FlaskForm):
 # define uploading form
 class UploadForm(FlaskForm):
     pdf_file = FileField('PDF File', validators=[DataRequired()])
-    submit = SubmitField('Upload')      
+    submit = SubmitField('Upload') 
+
+
+# notes form 
+class NotesForm(FlaskForm):
+    content = TextAreaField("Note", validators=[DataRequired()])
+    submit = SubmitField("Save Note") 
+
 
 
 @app.route('/')
@@ -305,9 +335,57 @@ def dashboard():
 
 
 
-@app.route('/notes')
+@app.route('/notes', methods=['GET', 'POST'])
+@login_required
 def notes():
-    return f'This is the notes page'
+    form = NotesForm()
+    if form.validate_on_submit():
+        content = form.content.data
+        user_id = current_user.id
+        timestamp = datetime.now()
+
+        # Insert the new note into the database
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('INSERT INTO notes (user_id, content, timestamp) VALUES (%s, %s, %s)',
+                    (user_id, content, timestamp))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash('Note added successfully!', 'success')
+        return redirect(url_for('notes'))
+
+    # Fetch the current user's notes from the database
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, content, timestamp FROM notes WHERE user_id = %s ORDER BY timestamp DESC', (current_user.id,))
+    notes = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return render_template('notes.html', form=form, notes=notes)
+
+
+@app.route('/notes/delete/<int:note_id>', methods=['POST'])
+@login_required
+def delete_note(note_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Ensure the note belongs to the current user
+    cur.execute('DELETE FROM notes WHERE id = %s AND user_id = %s', (note_id, current_user.id))
+    if cur.rowcount == 0:
+        flash('Note not found or you do not have permission to delete this note.', 'danger')
+    else:
+        flash('Note deleted successfully!', 'success')
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect(url_for('notes'))
+
 
 
 @app.route('/uploads/<string:encoded_filename>')
@@ -370,6 +448,35 @@ def all_uploads():
 
     # Render the 'all_uploads.html' template, passing the list of uploads
     return render_template('all_uploads.html', uploads=uploads, quote=quote)
+
+
+
+# @app.route('/search_files', methods=['GET'])
+# @login_required
+# def search_files():
+#     query = request.args.get('query')
+    
+#     if query:
+#         # Connect to the database
+#         conn = get_db_connection()
+#         cur = conn.cursor()
+        
+#         # Search the database for matching file names
+#         search_term = f"%{query}%"
+#         cur.execute("""
+#             SELECT id, file_name 
+#             FROM uploads 
+#             WHERE file_name ILIKE %s
+#             """, (search_term,))
+        
+#         files = cur.fetchall()
+#         cur.close()
+#         conn.close()
+        
+#         # Return matching file names as JSON
+#         return jsonify([{'id': file[0], 'file_name': file[1]} for file in files])
+    
+#     return jsonify([])  # Return an empty list if no query is provided
 
 
 
