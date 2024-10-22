@@ -30,10 +30,10 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16MB
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Database configuration
-DB_HOST = '9uss87s9bdb8n.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com'
-DB_NAME = 'dfrm2k2kail3ne'
-DB_USER = 'ua87miqc7vghrl'
-DB_PASSWORD = 'p0e017ea2ec947bbc78fac41f3bc2eaf76b31a6f7daa4b339f76af8a1b912f7e7'
+DB_HOST = 'ep-cool-heart-a8rml5o4.eastus2.azure.neon.tech'
+DB_NAME = 'file_db'
+DB_USER = 'file_db_owner'
+DB_PASSWORD = '4uzXolF3yANe'
 # postgresql://file_db_owner:4uzXolF3yANe@ep-cool-heart-a8rml5o4.eastus2.azure.neon.tech/file_db?sslmode=require
 #  postgres://ua87miqc7vghrl:p0e017ea2ec947bbc78fac41f3bc2eaf76b31a6f7daa4b339f76af8a1b912f7e7@c9uss87s9bdb8n.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dfrm2k2kail3ne
 
