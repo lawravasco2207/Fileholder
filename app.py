@@ -160,7 +160,7 @@ class SignUp(FlaskForm):
       username = StringField("Username", validators=[DataRequired()])
       email = EmailField("Email", validators=[DataRequired(), Email()])
       password = PasswordField("Password", validators=[DataRequired()])
-      confirm_password = PasswordField("Password", validators=[DataRequired(), EqualTo('password')])
+      confirm_password = PasswordField("Confirm_Password", validators=[DataRequired(), EqualTo('password')])
       admission_number = StringField('ADM.NO', validators=[DataRequired()])
       submit = SubmitField("Create Account")
 
