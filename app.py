@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, redirect, url_for, flash, send_file, request
+from flask import Flask, jsonify, render_template, redirect, url_for, flash, send_file
 import psycopg2
 import os
 import io
@@ -295,7 +295,9 @@ def upload():
         if file and file.filename.endswith('.pdf'):
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
-            save_file_to_db(file.filename, filepath, current_user.id)
+            
+            # Associate the file with the current user
+            save_file_to_db(file.filename, filepath, current_user.id)  # Pass current_user.id
             return redirect(url_for('dashboard'))
     return render_template('upload.html', form=form)
 
