@@ -1,1 +1,1 @@
-web: gunicorn app:fpdf
+web: gunicorn app:app
