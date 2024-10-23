@@ -3,5 +3,54 @@
 {% block title %} CVL | Home {% endblock %}
 
 {% block content %}
-<h1>Welcome to the home page {{ username }}</h1>
-{% endblock %} 
+<div class="container">
+
+    <!-- Welcome Section -->
+    <div class="jumbotron my-5 p-4 text-white bg-primary">
+        <h1 class="display-4">Welcome, {{ username }}!</h1>
+        <p class="lead">This is the Central Virtual Library (CVL), your gateway to learning resources, file management, and more. Explore our features and manage your files with ease.</p>
+        <hr class="my-4">
+        <a class="btn btn-light btn-lg" href="{{ url_for('dashboard') }}" role="button">Go to Dashboard</a>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <div class="card border-primary mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Upload and Manage Files</h5>
+                    <p class="card-text">Easily upload, delete, and manage your files all in one place.</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Manage Files</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Create and Save Notes</h5>
+                    <p class="card-text">Keep track of your important notes and access them whenever needed.</p>
+                    <a href="{{ url_for('notes') }}" class="btn btn-success">Create Notes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-info mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Profile Settings</h5>
+                    <p class="card-text">Update your profile, manage your account, and customize your experience.</p>
+                    <a href="{{ url_for('upload_profile_pic') }}" class="btn btn-info">Update Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2>About CVL</h2>
+            <p>CVL (Central Virtual Library) is designed to provide users with an intuitive interface for managing personal files, creating notes, and staying organized. The platform ensures that your resources are secure and easily accessible.</p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

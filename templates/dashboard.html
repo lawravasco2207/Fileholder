@@ -3,29 +3,46 @@
 {% block title %} CVL | Dashboard {% endblock %}
 
 {% block content %}
-<div class="dashboard">
-    <center>
-        <h2>Welcome, {{ username }}</h2>
-<p>Email: {{ email }}</p>
-<p>ADM.NO: {{ admission_number }}</p>
+<div class="container">
+    <h1 class="my-4">Welcome, {{ username }}</h1>
 
-<h3>Your Uploads</h3> 
-<ul>
-    {% for upload in uploads %}
-    <li>
-        {{ upload[0] }} 
-        <!-- Download button with encoded filename -->
-        <a href="{{ url_for('serve_file', encoded_filename=quote(upload[0]) ) }}" class="btn btn-primary" download>Download/Open</a>
-    </li>
-    {% endfor %}
-</ul>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Profile Information</h5>
+            <div class="mb-3">
+                <a href="{{ url_for('upload_profile_pic') }}">Add Profile Pic</a></p>
+                <h6>Profile Picture:</h6>
+                {% if profile_picture %}
+                    <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ profile_picture) }}" alt="Profile Picture" class="img-thumbnail" style="max-width: 150px;">
+                {% else %}
+                    <p>No profile picture uploaded.</p>
+                {% endif %}
+            </div>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <p><strong>Admission Number:</strong> {{ admission_number }}</p>
+        </div>
+    </div>
 
-        
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Your Uploaded Files</h5>
 
+            {% if uploads %}
+                <ul class="list-group">
+                    {% for upload in uploads %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ upload[0] }}
+                        <form method="POST" action="{{ url_for('delete_upload', filename=quote(upload[0])) }}" onsubmit="return confirm('Are you sure you want to delete this file?');">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no uploaded files.</p>
+            {% endif %}
+        </div>
+    </div>
 
-<a href="{{ url_for('upload') }}" id="upload" class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Upload a new file</a>
-<br>
-<a href="{{ url_for('logout') }}" id="logout" class="link-secondary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover">Log Out</a>
-   </center>
 </div>
 {% endblock %}

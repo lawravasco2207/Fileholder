@@ -1,0 +1,43 @@
+{% extends 'nav.html' %}
+
+{% block title %} CVL | Upload Profile Picture {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Upload Profile Picture</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Current Profile Picture</h5>
+            <div class="mb-3">
+                {% if profile_picture %}
+                    <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ profile_picture) }}" alt="Profile Picture" class="img-thumbnail" style="max-width: 150px;">
+                {% else %}
+                    <p>No profile picture uploaded.</p>
+                {% endif %}
+            </div>
+
+            <h5 class="card-title">Upload New Profile Picture</h5>
+            <form method="POST" action="{{ url_for('upload_profile_pic') }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}  <!-- For CSRF protection -->
+                <div class="mb-3">
+                    <label for="profile_picture" class="form-label">Choose a picture</label>
+                    {{ form.profile_picture(class="form-control", accept="image/*") }}
+                    {% if form.profile_picture.errors %}
+                        <div class="text-danger">
+                            {% for error in form.profile_picture.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+
+            {% if message %}
+                <div class="alert alert-info mt-3">{{ message }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,10 +7,11 @@ from datetime import datetime
 # from psycopg2 import sql
 from urllib.parse import quote, unquote
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField, TextAreaField, BooleanField
+from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
 from email_validator import validate_email, EmailNotValidError
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import PyPDF2
 from fpdf import FPDF 
@@ -25,8 +26,13 @@ login_manager.login_message_category = 'info'  # For flash messages
 
 
 app.config['SECRET_KEY'] = 'mysupersecretkey'
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16MB
+
+app.config['PROFILE_PIC_FOLDER'] = 'static/uploads/profile_pics/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(app.config['PROFILE_PIC_FOLDER'], exist_ok=True)
+
 
 # make sure the uploads folder is there 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -38,6 +44,9 @@ DB_USER = 'file_db_owner'
 DB_PASSWORD = '4uzXolF3yANe'
 # postgresql://file_db_owner:4uzXolF3yANe@ep-cool-heart-a8rml5o4.eastus2.azure.neon.tech/file_db?sslmode=require
 #  postgres://ua87miqc7vghrl:p0e017ea2ec947bbc78fac41f3bc2eaf76b31a6f7daa4b339f76af8a1b912f7e7@c9uss87s9bdb8n.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dfrm2k2kail3ne
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db_connection():
     conn = psycopg2.connect(
@@ -223,6 +232,20 @@ class NotesForm(FlaskForm):
     submit = SubmitField("Save Note") 
 
 
+# forms.py
+class UpdateProfileForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    password = PasswordField('New Password', validators=[Optional()])
+    submit = SubmitField('Update Profile')
+
+# Profile picture upload form
+class ProfilePicForm(FlaskForm):
+    profile_picture = FileField('Upload Profile Picture', validators=[DataRequired()])
+    submit = SubmitField('Upload Picture')
+
+# class UploadProfilePic():
+#     pic_name = FileField('Choose pic', validators=[DataRequired()])
+#     submit = SubmitField('Upload')
 
 @app.route('/')
 @app.route('/home')
@@ -319,22 +342,27 @@ def save_file_to_db(filename, filepath, user_id):
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Fetch the current user's details
+    # Fetch user details and uploads
     username = current_user.username
     email = current_user.email
     admission_number = current_user.admission_number
 
-    # Fetch the user's uploads from the database
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    # Fetch user's uploads
     cur.execute('SELECT filename FROM pdf_files WHERE user_id = %s', (current_user.id,))
     uploads = cur.fetchall()
+
+    # Fetch user's profile picture filename
+    cur.execute('SELECT filename FROM profile_pics WHERE user_id = %s ORDER BY uploaded_at DESC LIMIT 1', (current_user.id,))
+    profile_picture = cur.fetchone()
+    profile_picture_filename = profile_picture[0] if profile_picture else None
+    
     cur.close()
     conn.close()
 
-    # Pass the 'quote' function to the template for encoding filenames
-    return render_template('dashboard.html', username=username, email=email, admission_number=admission_number, uploads=uploads, quote=quote)
-
+    return render_template('dashboard.html', username=username, email=email, admission_number=admission_number, uploads=uploads, profile_picture=profile_picture_filename, quote=quote)
 
 
 @app.route('/notes', methods=['GET', 'POST'])
@@ -451,6 +479,95 @@ def all_uploads():
     # Render the 'all_uploads.html' template, passing the list of uploads
     return render_template('all_uploads.html', uploads=uploads, quote=quote)
 
+
+@app.route('/uploads/delete/<string:filename>', methods=['POST'])
+@login_required
+def delete_upload(filename):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Ensure the file belongs to the current user
+    cur.execute('SELECT id FROM pdf_files WHERE filename = %s AND user_id = %s', (filename, current_user.id))
+    file = cur.fetchone()
+
+    if file:
+        # Delete the file record from the database
+        cur.execute('DELETE FROM pdf_files WHERE filename = %s AND user_id = %s', (filename, current_user.id))
+        conn.commit()
+
+        # Optionally, delete the file from the filesystem
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        flash('File deleted successfully!', 'success')
+    else:
+        flash('File not found or you do not have permission to delete this file.', 'danger')
+
+    cur.close()
+    conn.close()
+    
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/update_profile')
+@login_required   
+def update_profile():
+    form = UpdateProfileForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Update the user's username
+        cur.execute('UPDATE users SET username = %s WHERE id = %s', (username, current_user.id))
+
+        # If a new password is provided, update it
+        if password:
+            hashed_password = generate_password_hash(password)
+            cur.execute('UPDATE users SET password = %s WHERE id = %s', (hashed_password, current_user.id))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash('Profile updated successfully!', 'success') 
+        return redirect(url_for('dashboard'))
+
+    # Populate the form with current user data
+    form.username.data = current_user.username
+    return render_template('update_profile.html', form=form)
+
+
+@app.route('/upload_profile_pic', methods=['GET', 'POST'])
+@login_required
+def upload_profile_pic():
+    form = ProfilePicForm()
+    if form.validate_on_submit():
+        file = form.profile_picture.data
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['PROFILE_PIC_FOLDER'], filename)
+            file.save(filepath)
+
+            # Save to database
+            conn = get_db_connection()
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO profile_pics (user_id, filename, uploaded_at) VALUES (%s, %s, NOW())",
+                    (current_user.id, filename)
+                )
+            conn.commit()
+            conn.close()
+
+            flash('Profile picture uploaded successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid file format or no file selected', 'danger')
+
+    return render_template('uploaded_profile.html', form=form)
 
 
 # @app.route('/search_files', methods=['GET'])
