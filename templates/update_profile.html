@@ -40,25 +40,6 @@
             {% endfor %}
         </div>
 
-        <div class="form-group mb-3">
-            <label for="profile_picture" class="form-label">Upload New Profile Picture:</label>
-            {{ form.profile_picture(class="form-control", id="profile_picture") }}
-            {% if current_user.profile_picture %}
-                <div class="mt-2">
-                    <h6>Preview:</h6>
-                    <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_picture) }}" alt="Uploaded Profile Picture" class="img-thumbnail" style="max-width: 150px;">
-                </div>
-            {% endif %}
-            {% for error in form.profile_picture.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-        <div class="form-group form-check mb-3">
-            {{ form.remove_profile_picture(class="form-check-input") }}
-            <label class="form-check-label" for="remove_profile_picture">Remove Current Profile Picture</label>
-        </div>
-
         <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}
         </div>

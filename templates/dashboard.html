@@ -14,6 +14,9 @@
                 <h6>Profile Picture:</h6>
                 {% if profile_picture %}
                     <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ profile_picture) }}" alt="Profile Picture" class="img-thumbnail" style="max-width: 150px;">
+                    <form method="POST" action="{{ url_for('delete_profile_pic') }}" onsubmit="return confirm('Are you sure you want to delete your profile picture?');">
+                        <button type="submit" class="btn btn-danger btn-sm mt-2">Delete Profile Picture</button>
+                    </form>
                 {% else %}
                     <p>No profile picture uploaded.</p>
                 {% endif %}

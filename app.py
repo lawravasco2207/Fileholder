@@ -1,13 +1,14 @@
-from flask import Flask, jsonify, render_template, redirect, url_for, flash, send_file
+from flask import Flask, render_template, redirect, url_for, flash, send_file
 import psycopg2
 import os
 import io
+# from flask_mail import Mail, Message
 # import requests
 from datetime import datetime
 # from psycopg2 import sql
 from urllib.parse import quote, unquote
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField, TextAreaField, BooleanField
+from wtforms import EmailField, PasswordField, StringField, FileField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional, Length
 from email_validator import validate_email, EmailNotValidError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -510,7 +511,7 @@ def delete_upload(filename):
     return redirect(url_for('dashboard'))
 
 
-@app.route('/update_profile')
+@app.route('/update_profile', methods=['GET', 'POST'])
 @login_required   
 def update_profile():
     form = UpdateProfileForm()
@@ -570,33 +571,38 @@ def upload_profile_pic():
     return render_template('uploaded_profile.html', form=form)
 
 
-# @app.route('/search_files', methods=['GET'])
-# @login_required
-# def search_files():
-#     query = request.args.get('query')
-    
-#     if query:
-#         # Connect to the database
-#         conn = get_db_connection()
-#         cur = conn.cursor()
-        
-#         # Search the database for matching file names
-#         search_term = f"%{query}%"
-#         cur.execute("""
-#             SELECT id, file_name 
-#             FROM uploads 
-#             WHERE file_name ILIKE %s
-#             """, (search_term,))
-        
-#         files = cur.fetchall()
-#         cur.close()
-#         conn.close()
-        
-#         # Return matching file names as JSON
-#         return jsonify([{'id': file[0], 'file_name': file[1]} for file in files])
-    
-#     return jsonify([])  # Return an empty list if no query is provided
 
+@app.route('/delete_profile_pic', methods=['POST'])
+@login_required
+def delete_profile_pic():
+    # Query the current user profile picture from the database
+    user_id = current_user.id
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT filename FROM profile_pics WHERE user_id = %s", (user_id,))
+    result = cursor.fetchone()
+
+    if result and result[0]:
+        profile_pic = result[0]
+        # Path to the file to delete
+        profile_pic_path = os.path.join(app.root_path, 'static/uploads/profile_pics', secure_filename(profile_pic))
+        
+        try:
+            # Remove the profile picture from the file system if it exists
+            if os.path.exists(profile_pic_path):
+                os.remove(profile_pic_path)
+            
+            # Update the database to remove the profile picture reference
+            cursor.execute("DELETE FROM profile_pics WHERE user_id = %s", (user_id,))
+            conn.commit()
+
+            flash('Profile picture deleted successfully.', 'success')
+        except Exception as e:
+            flash(f"An error occurred while deleting the profile picture: {str(e)}", 'danger')
+    else:
+        flash('No profile picture found.', 'warning')
+    
+    return redirect(url_for('dashboard'))
 
 
 

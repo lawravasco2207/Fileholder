@@ -12,7 +12,7 @@
             {{ form.content.label(class="form-label") }}
             {{ form.content(class="form-control", rows="5") }}
         </div>
-        <div>
+        <div class="d-grid">
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
@@ -23,8 +23,8 @@
     {% if notes %}
         <ul class="list-group mt-3">
             {% for note in notes %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-column flex-md-row">
+                <div class="mb-2 mb-md-0">
                     <p>{{ note[1] }}</p>
                     <small class="text-muted">Written on {{ note[2].strftime('%Y-%m-%d %H:%M:%S') }}</small>
                 </div>

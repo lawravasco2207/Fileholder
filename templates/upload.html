@@ -3,11 +3,20 @@
 {% block title %} CVL | Upload {% endblock %}
 
 {% block content %}
-<h1>Upload PDF</h1>
-<form method="post" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    {{ form.pdf_file.label }} {{ form.pdf_file(class='btn btn-light') }}<br>
-    {{ form.submit(class='btn btn-primary') }}
-</form> 
-
+<div class="container mt-5">
+    <h1 class="mb-4">Upload PDF</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.pdf_file.label(class='form-label') }}
+            {{ form.pdf_file(class='form-control-file') }}
+        </div>
+        
+        <div class="form-group mt-3">
+            {{ form.submit(class='btn btn-primary') }}
+        </div>
+    </form>
+</div>
 {% endblock %}
