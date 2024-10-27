@@ -26,7 +26,7 @@ login_manager.login_view = 'login'  # Redirects to login page if not logged in
 login_manager.login_message_category = 'info'  # For flash messages
 
 
-app.config['SECRET_KEY'] = 'mysupersecretkey'
+app.config['SECRET_KEY'] = ''
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16MB
 
